@@ -1,5 +1,16 @@
-## ![gitgif (2)](https://github.com/KEYS-A15/KEYS-A15/assets/78949462/635cf704-ecbd-421d-8dad-1b2a2e05d091)
-
-<div align='center'>I work for Innovation.</div>
-connect with me.<br>
-gajjar.shrey@proton.me
+'''{
+    "Message": "Hello Visitor! You've reached Shrey Gajjar (aka KEYS)",
+    "Details": {
+        "Name": "Shrey Gajjar",
+        "Role": "MS CS Student at Arizona State University",
+        "Experiences": [
+            "AI/ML Engineer at CodeTrade",
+            "Data Scienctist at Vertocity"
+        ],
+        "Research Interests": [
+            "Planning assisted RL in Cloud resource allocation",
+            "AI to enhance tumor detection by improving TCR-epitope prediction in local neighborhood",
+            "Planning for "
+        ]
+    }
+}'''
