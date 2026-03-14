@@ -1,4 +1,5 @@
-'''{
+```jsonc
+{
     "Message": "Hello Visitor! You've reached Shrey Gajjar (aka KEYS)",
     "Details": {
         "Name": "Shrey Gajjar",
@@ -13,4 +14,5 @@
             "Planning for "
         ]
     }
-}'''
+}
+```
