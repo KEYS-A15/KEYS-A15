@@ -1,8 +1,16 @@
 name: Generate contribution grid
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/scripts/generate_contribution_grid.py"
+      - ".github/workflows/contribution-grid.yml"
+
   schedule:
     - cron: "23 8 * * *"
+
   workflow_dispatch:
 
 permissions:

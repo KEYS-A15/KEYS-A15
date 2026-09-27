@@ -7,7 +7,8 @@ import argparse
 import json
 import os
 import urllib.request
-from datetime import date
+from datetime import date, datetime
+from zoneinfo import ZoneInfo
 from html import escape
 from pathlib import Path
 
@@ -108,6 +109,92 @@ def render_svg(calendar: dict, username: str) -> str:
 
     scan_end_x = grid_x + max(len(weeks) - 1, 0) * step + cell
     scan_distance = max(scan_end_x - grid_x, 1)
+    scan_finish = scan_start + scan_duration
+
+    all_days = sorted(
+        (
+            day
+            for week in weeks
+            for day in week["contributionDays"]
+        ),
+        key=lambda day: day["date"],
+    )
+
+    counts = [
+        int(day["contributionCount"])
+        for day in all_days
+    ]
+
+    last_7 = sum(counts[-7:])
+    previous_7 = sum(counts[-14:-7])
+    last_30 = sum(counts[-30:])
+
+    # Current streak. A contribution-free current day does not
+    # immediately terminate yesterday's completed streak.
+    current_streak = 0
+    streak_counts = counts
+
+    if all_days:
+        latest_day = date.fromisoformat(all_days[-1]["date"])
+        phoenix_today = datetime.now(
+            ZoneInfo("America/Phoenix")
+        ).date()
+
+        if latest_day == phoenix_today and counts[-1] == 0:
+            streak_counts = counts[:-1]
+
+    for count in reversed(streak_counts):
+        if count == 0:
+            break
+
+        current_streak += 1
+
+    longest_streak = 0
+    running_streak = 0
+
+    for count in counts:
+        if count > 0:
+            running_streak += 1
+            longest_streak = max(
+                longest_streak,
+                running_streak,
+            )
+        else:
+            running_streak = 0
+
+    # Compare this seven-day period with the preceding seven days.
+    if previous_7 == 0:
+        signal = "NEW" if last_7 else "FLAT"
+    else:
+        signal_change = round(
+            ((last_7 - previous_7) / previous_7) * 100
+        )
+
+        if signal_change > 0:
+            signal = f"UP {signal_change}%"
+        elif signal_change < 0:
+            signal = f"DOWN {abs(signal_change)}%"
+        else:
+            signal = "FLAT"
+
+    sync_date = datetime.now(
+        ZoneInfo("America/Phoenix")
+    ).strftime("%Y-%m-%d")
+
+    telemetry = (
+        f"365D {total}  //  "
+        f"30D {last_30}  //  "
+        f"7D {last_7}  //  "
+        f"STREAK {current_streak}D  //  "
+        f"MAX {longest_streak}D  //  "
+        f"SIGNAL {signal}  //  "
+        f"SYNC {sync_date}"
+    )
+
+    current_week_x = (
+        grid_x
+        + max(len(weeks) - 1, 0) * step
+    )
 
     cells: list[str] = []
     labels: list[str] = []
@@ -299,6 +386,18 @@ def render_svg(calendar: dict, username: str) -> str:
       .cell {{
         opacity: 0.16;
       }}
+      
+      .telemetry {{
+        fill: #56b978;
+        font-size: 8px;
+        letter-spacing: 0.35px;
+      }}
+
+      .boot {{
+        fill: #39ff88;
+        font-size: 10px;
+        letter-spacing: 1.2px;
+      }}
     </style>
   </defs>
 
@@ -342,14 +441,75 @@ def render_svg(calendar: dict, username: str) -> str:
     {total} contributions · last 12 months
   </text>
 
-  <text
-    x="940"
-    y="25"
-    text-anchor="end"
-    class="status"
-  >
-    ● LIVE CALENDAR
-  </text>
+  <g text-anchor="end" class="boot">
+    <text
+      x="940"
+      y="25"
+      opacity="1"
+    >
+      INITIALIZING...
+
+      <animate
+        attributeName="opacity"
+        values="1;1;0"
+        keyTimes="0;.82;1"
+        begin="0s"
+        dur=".7s"
+        fill="freeze"
+      />
+    </text>
+
+    <text
+      x="940"
+      y="25"
+      opacity="0"
+    >
+      INDEXING 365 DAYS...
+
+      <animate
+        attributeName="opacity"
+        values="0;1;1;0"
+        keyTimes="0;.08;.9;1"
+        begin=".58s"
+        dur="{scan_finish - .58:.2f}s"
+        fill="freeze"
+      />
+    </text>
+
+    <text
+      x="940"
+      y="25"
+      opacity="0"
+    >
+      ● CALENDAR ONLINE
+
+      <animate
+        attributeName="opacity"
+        from="0"
+        to="1"
+        begin="{scan_finish:.2f}s"
+        dur=".18s"
+        fill="freeze"
+      />
+    </text>
+
+    <rect
+      x="944"
+      y="17"
+      width="5"
+      height="9"
+      fill="#39ff88"
+      opacity="0"
+    >
+      <animate
+        attributeName="opacity"
+        values="0;1;0"
+        begin="{scan_finish + .2:.2f}s"
+        dur="1s"
+        repeatCount="indefinite"
+      />
+    </rect>
+  </g>
 
   {''.join(labels)}
 
@@ -373,6 +533,26 @@ def render_svg(calendar: dict, username: str) -> str:
   <g>
     {''.join(cells)}
   </g>
+  
+  <rect
+    x="{current_week_x - 3}"
+    y="51"
+    width="{cell + 6}"
+    height="111"
+    rx="2"
+    fill="none"
+    stroke="#70ff9b"
+    stroke-width="1"
+    opacity="0"
+  >
+    <animate
+      attributeName="opacity"
+      values=".22;.9;.22"
+      begin="{scan_finish:.2f}s"
+      dur="2.4s"
+      repeatCount="indefinite"
+    />
+  </rect>
 
   <!-- Jagged pixel scan front -->
   <g opacity="0">
@@ -452,6 +632,14 @@ def render_svg(calendar: dict, username: str) -> str:
     fill="url(#crtLines)"
     pointer-events="none"
   />
+
+  <text
+    x="20"
+    y="174"
+    class="telemetry"
+  >
+    {escape(telemetry)}
+  </text>
 
   {''.join(legend)}
 </svg>
