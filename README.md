@@ -18,10 +18,4 @@
 ```
 ## GitHub activity
 
-<picture>
-  <img
-    src="./assets/contribution-grid.svg"
-    width="100%"
-    alt="Shrey Gajjar's GitHub contribution activity over the last year"
-  />
-</picture>
+![Contribution grid](./assets/contribution-grid.svg?v=2)
