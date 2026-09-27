@@ -1,0 +1,34 @@
+name: Generate contribution grid
+
+on:
+  schedule:
+    - cron: "23 8 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  contribution-grid:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out profile repository
+        uses: actions/checkout@v4
+
+      - name: Generate contribution grid
+        env:
+          METRICS_TOKEN: ${{ secrets.METRICS_TOKEN }}
+        run: |
+          python .github/scripts/generate_contribution_grid.py \
+            --username KEYS-A15 \
+            --output assets/contribution-grid.svg
+
+      - name: Commit updated graph
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/contribution-grid.svg
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: update contribution grid"
+          git push
