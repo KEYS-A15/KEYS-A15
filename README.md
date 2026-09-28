@@ -32,12 +32,12 @@
 
 | Priority | System | Intended contribution | Status |
 | ---: | --- | --- | --- |
-| 01 | **SentinelKWS** | Privacy-preserving, real-time keyword spotting with speaker-disjoint evaluation, open-set unknown/noise handling, calibrated abstention, and NeMo → ONNX → TensorRT deployment | Next build |
+| 01 | **SentinelKWS** | Privacy-preserving, real-time keyword spotting with speaker-disjoint evaluation, open-set unknown/noise handling, calibrated abstention, and NeMo → ONNX → TensorRT deployment | Building |
 | 02 | **Hierarchical Laya** | Remove Laya’s large-option ceiling through hierarchical label selection and calibrated probability composition, evaluated on Banking77 | Research prototype planned |
 | 03 | **KAIROS** | SLA-aware inference scheduling across execution backends using latency, throughput, VRAM, energy, and correctness constraints | High-risk systems research |
 
 ## `> connect --channels`
 
-[LinkedIn](YOUR_LINKEDIN_URL) ·
-[ORCID](YOUR_ORCID_URL) ·
-[Email](mailto:YOUR_EMAIL)
+[LinkedIn](www.linkedin.com/in/shrey-gajjar) ·
+[ORCID](https://orcid.org/0009-0001-3260-7267) ·
+[Email](mailto:shreydotgajjar@gmail.com)
