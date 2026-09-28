@@ -1,0 +1,298 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="960"
+     height="258"
+     viewBox="0 0 960 258"
+     role="img"
+     aria-labelledby="title desc">
+
+  <title id="title">KEYS-A15 terminal profile</title>
+
+  <desc id="desc">
+    Animated terminal introduction for Shrey Gajjar,
+    an AI and machine learning engineer and computer science researcher.
+  </desc>
+
+  <defs>
+    <pattern id="scanlines"
+             width="1"
+             height="4"
+             patternUnits="userSpaceOnUse">
+      <rect width="1"
+            height="1"
+            fill="#39ff88"
+            opacity="0.035"/>
+    </pattern>
+
+    <filter id="softGlow"
+            x="-20%"
+            y="-40%"
+            width="140%"
+            height="180%">
+      <feGaussianBlur stdDeviation="1.2"
+                      result="blur"/>
+
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <clipPath id="command-one">
+      <rect x="26" y="31" width="0" height="18">
+        <animate attributeName="width"
+                 from="0"
+                 to="150"
+                 begin=".15s"
+                 dur=".32s"
+                 fill="freeze"/>
+      </rect>
+    </clipPath>
+
+    <clipPath id="answer-one">
+      <rect x="26" y="56" width="0" height="18">
+        <animate attributeName="width"
+                 from="0"
+                 to="700"
+                 begin=".55s"
+                 dur=".72s"
+                 fill="freeze"/>
+      </rect>
+    </clipPath>
+
+    <clipPath id="answer-two">
+      <rect x="26" y="77" width="0" height="18">
+        <animate attributeName="width"
+                 from="0"
+                 to="850"
+                 begin="1.05s"
+                 dur=".78s"
+                 fill="freeze"/>
+      </rect>
+    </clipPath>
+
+    <clipPath id="command-two">
+      <rect x="26" y="108" width="0" height="18">
+        <animate attributeName="width"
+                 from="0"
+                 to="300"
+                 begin="1.82s"
+                 dur=".52s"
+                 fill="freeze"/>
+      </rect>
+    </clipPath>
+
+    <clipPath id="directive-one">
+      <rect x="42" y="133" width="0" height="18">
+        <animate attributeName="width"
+                 from="0"
+                 to="850"
+                 begin="2.35s"
+                 dur=".82s"
+                 fill="freeze"/>
+      </rect>
+    </clipPath>
+
+    <clipPath id="directive-two">
+      <rect x="42" y="154" width="0" height="18">
+        <animate attributeName="width"
+                 from="0"
+                 to="850"
+                 begin="2.85s"
+                 dur=".82s"
+                 fill="freeze"/>
+      </rect>
+    </clipPath>
+
+    <clipPath id="directive-three">
+      <rect x="42" y="175" width="0" height="18">
+        <animate attributeName="width"
+                 from="0"
+                 to="850"
+                 begin="3.35s"
+                 dur=".82s"
+                 fill="freeze"/>
+      </rect>
+    </clipPath>
+
+    <clipPath id="command-three">
+      <rect x="26" y="206" width="0" height="18">
+        <animate attributeName="width"
+                 from="0"
+                 to="350"
+                 begin="4.15s"
+                 dur=".58s"
+                 fill="freeze"/>
+      </rect>
+    </clipPath>
+
+    <clipPath id="open-source-output">
+      <rect x="26" y="231" width="0" height="18">
+        <animate attributeName="width"
+                 from="0"
+                 to="850"
+                 begin="4.72s"
+                 dur=".88s"
+                 fill="freeze"/>
+      </rect>
+    </clipPath>
+
+    <style>
+      text {
+        font-family:
+          ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          Consolas,
+          monospace;
+      }
+
+      .command {
+        fill: #9dffbd;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .answer {
+        fill: #58c97c;
+        font-size: 13px;
+      }
+
+      .key {
+        fill: #39ff88;
+        font-weight: 600;
+      }
+
+      .meta {
+        fill: #34754c;
+        font-size: 9px;
+        letter-spacing: 1.1px;
+      }
+    </style>
+  </defs>
+
+  <rect width="960"
+        height="258"
+        rx="10"
+        fill="#020906"/>
+
+  <rect x=".5"
+        y=".5"
+        width="959"
+        height="257"
+        rx="9.5"
+        fill="none"
+        stroke="#174d2e"/>
+
+  <path d="
+      M1 18V1h17
+      M942 1h17v17
+      M1 240v17h17
+      M942 257h17v-17
+    "
+    fill="none"
+    stroke="#2ca85a"
+    opacity=".5"/>
+
+  <text x="934"
+        y="17"
+        text-anchor="end"
+        class="meta">
+    SESSION: KEYS-A15 // ONLINE
+  </text>
+
+  <g filter="url(#softGlow)">
+    <text x="26"
+          y="44"
+          class="command"
+          clip-path="url(#command-one)">
+      &gt; whoami
+    </text>
+
+    <text x="26"
+          y="69"
+          class="answer"
+          clip-path="url(#answer-one)">
+      Shrey Gajjar // AI/ML Engineer + Computer Science Researcher
+    </text>
+
+    <text x="26"
+          y="90"
+          class="answer"
+          clip-path="url(#answer-two)">
+      Building reliable AI systems where research claims survive contact with production.
+    </text>
+
+    <text x="26"
+          y="121"
+          class="command"
+          clip-path="url(#command-two)">
+      &gt; cat current_directives.sys
+    </text>
+
+    <text x="42"
+          y="146"
+          class="answer"
+          clip-path="url(#directive-one)">
+      <tspan class="key">RESEARCH</tspan>
+      <tspan>
+        TCR mutation-effect learning // planning-assisted reinforcement learning
+      </tspan>
+    </text>
+
+    <text x="42"
+          y="167"
+          class="answer"
+          clip-path="url(#directive-two)">
+      <tspan class="key">SYSTEMS</tspan>
+      <tspan>
+        reliable agents // evidence pipelines // inference performance
+      </tspan>
+    </text>
+
+    <text x="42"
+          y="188"
+          class="answer"
+          clip-path="url(#directive-three)">
+      <tspan class="key">PRINCIPLE</tspan>
+      <tspan>
+        measure first // automate second // make every decision inspectable
+      </tspan>
+    </text>
+
+    <text x="26"
+          y="219"
+          class="command"
+          clip-path="url(#command-three)">
+      &gt; tail -n 1 open_source.log
+    </text>
+
+    <text x="26"
+          y="244"
+          class="answer"
+          clip-path="url(#open-source-output)">
+      <tspan class="key">MERGED</tspan>
+      <tspan>
+        vLLM #57528 // offloaded streaming derender detokenization
+      </tspan>
+    </text>
+  </g>
+
+  <rect x="620"
+        y="233"
+        width="7"
+        height="13"
+        fill="#7dffa7"
+        opacity="0">
+    <animate attributeName="opacity"
+             values="0;1;0"
+             begin="5.65s"
+             dur=".9s"
+             repeatCount="indefinite"/>
+  </rect>
+
+  <rect width="960"
+        height="258"
+        rx="10"
+        fill="url(#scanlines)"
+        pointer-events="none"/>
+</svg>
