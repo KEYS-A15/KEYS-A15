@@ -13,7 +13,11 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 API_URL = "https://api.github.com/graphql"
-REVEAL_VERSION = "diagonal-slash-v3"
+REVEAL_VERSION = "pixel-cascade-v6"
+REVEAL_START = 0.18
+COL_DELAY = 0.023
+ROW_DELAY = 0.050
+CELL_DURATION = 0.44
 PALETTE = {
     "NONE": "#07130d",
     "FIRST_QUARTILE": "#0d3b22",
@@ -87,21 +91,15 @@ def render_svg(calendar: dict, username: str) -> str:
     cell = 11
     weeks = calendar["weeks"]
     total = calendar["totalContributions"]
-    # The reveal is intentionally short and one-shot. The graph starts dark,
-    # a narrow pixel front reconstructs each column, then the final calendar
-    # remains still. This keeps the motion cinematic without turning the
-    # profile README into a permanently animated dashboard.
-    scan_start = 0.22
-    scan_duration = 2.35
     scan_end_x = grid_x + max(len(weeks) - 1, 0) * step + cell
-    scan_finish = scan_start + scan_duration
-    settle_finish = scan_finish + 0.12
-    front_top = 47
-    front_bottom = 163
-    front_top_x = 38
-    front_bottom_x = -18
-    scan_from_x = grid_x - front_top_x
-    scan_to_x = scan_end_x - front_bottom_x
+    pixel_sweep_duration = max(max(len(weeks) - 1, 0) * COL_DELAY, 0.01)
+    last_cell_delay = (
+        REVEAL_START
+        + max(len(weeks) - 1, 0) * COL_DELAY
+        + 6 * ROW_DELAY
+    )
+    reveal_finish = last_cell_delay + CELL_DURATION
+    settle_finish = reveal_finish + 0.12
 
     all_days = sorted(
         (
@@ -179,12 +177,63 @@ def render_svg(calendar: dict, username: str) -> str:
             color = PALETTE.get(level, PALETTE["NONE"])
             count = int(day["contributionCount"])
             day_label = "contribution" if count == 1 else "contributions"
+            delay = REVEAL_START + week_index * COL_DELAY + weekday * ROW_DELAY
             cells.append(
-                f'<rect x="{x}" y="{y}" width="{cell}" height="{cell}" '
-                f'rx="1" fill="{color}" opacity="1">'
+                f'<rect class="contribution-cell" x="{x}" y="{y}" '
+                f'width="{cell}" height="{cell}" rx="1" fill="{color}" '
+                f'style="animation-delay:{delay:.3f}s">'
                 f'<title>{escape(day["date"])}: {count} {day_label}</title>'
+                f'<animate attributeName="fill" '
+                f'values="#effff4;#8dffb1;{color}" keyTimes="0;0.18;1" '
+                f'begin="{delay:.3f}s" dur="0.22s" fill="freeze"/>'
                 "</rect>"
             )
+
+    # The seven staggered heads and tapered wakes are adapted from the
+    # original pixel-front design. Each row now moves on the same timing as
+    # its cell cascade, so the pixels appear to trigger the reveal rather
+    # than forming an unrelated overlay.
+    head_offsets = (0, 4, 8, 3, 9, 5, 1)
+    wake_opacities = (0.96, 0.34, 0.15, 0.06)
+    scan_rows: list[str] = []
+    for row, head_offset in enumerate(head_offsets):
+        y = grid_y + row * step
+        row_start = REVEAL_START + row * ROW_DELAY
+        wake = "".join(
+            f'<rect x="{head_offset - depth * 8}" y="{y}" '
+            f'width="{5 if depth == 0 else 6}" height="{cell}" rx="1" '
+            f'fill="{"#e9fff0" if depth == 0 else "#39ff88"}" '
+            f'opacity="{opacity}"/>'
+            for depth, opacity in enumerate(wake_opacities)
+        )
+        fragments = "".join(
+            (
+                f'<rect x="{head_offset + dx}" y="{y + dy}" width="{size}" '
+                f'height="{size}" rx=".5" fill="#39ff88" opacity="{opacity}"/>'
+            )
+            for dx, dy, size, opacity in (
+                (-18, 2, 3, 0.20),
+                (-28, 7, 2, 0.12),
+                (-13, -3, 2, 0.17),
+            )
+        )
+        # Offset the group's travel by the head's local x position. This
+        # keeps the bright pixel aligned with each contribution column even
+        # though the seven rows use different head shapes.
+        sweep_start_x = grid_x - head_offset
+        sweep_end_x = grid_x + max(len(weeks) - 1, 0) * step - head_offset
+        scan_rows.append(
+            f'<g opacity="0">'
+            f'<g filter="url(#pixelGlow)">{wake}</g>{fragments}'
+            f'<animate attributeName="opacity" values="0;1;1;0" '
+            f'keyTimes="0;.025;.94;1" begin="{row_start:.3f}s" '
+            f'dur="{pixel_sweep_duration:.3f}s" fill="freeze"/>'
+            f'<animateTransform attributeName="transform" type="translate" '
+            f'from="{sweep_start_x} 0" to="{sweep_end_x} 0" '
+            f'begin="{row_start:.3f}s" dur="{pixel_sweep_duration:.3f}s" '
+            f'fill="freeze"/>'
+            f'</g>'
+        )
 
     legend_x = width - 190
     legend = [
@@ -202,19 +251,6 @@ def render_svg(calendar: dict, username: str) -> str:
   <title id="title">{escape(username)} GitHub contributions</title>
   <desc id="desc">{total} contributions during the last year, revealed from left to right</desc>
   <defs>
-    <clipPath id="historyReveal" clipPathUnits="userSpaceOnUse">
-      <path d="M-1200 {front_top} H{front_top_x} L{front_bottom_x} {front_bottom} H-1200 Z"
-            transform="translate({scan_to_x} 0)">
-        <animateTransform attributeName="transform" type="translate"
-          from="{scan_from_x} 0" to="{scan_to_x} 0"
-          begin="{scan_start}s" dur="{scan_duration}s" fill="freeze"/>
-      </path>
-    </clipPath>
-    <linearGradient id="frontBand" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#39ff88" stop-opacity="0.02"/>
-      <stop offset="0.62" stop-color="#39ff88" stop-opacity="0.16"/>
-      <stop offset="1" stop-color="#dffff0" stop-opacity="0.42"/>
-    </linearGradient>
     <pattern id="crtLines" width="1" height="4" patternUnits="userSpaceOnUse">
       <rect width="1" height="1" fill="#39ff88" opacity="0.022"/>
     </pattern>
@@ -223,7 +259,16 @@ def render_svg(calendar: dict, username: str) -> str:
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
     <style>
+      @keyframes contribution-reveal {{
+        0% {{ opacity:0; transform:translateY(-6px); }}
+        4% {{ opacity:1; transform:translateY(-3px); }}
+        100% {{ opacity:1; transform:translateY(0); }}
+      }}
       text {{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }}
+      .contribution-cell {{
+        opacity:0;
+        animation:contribution-reveal {CELL_DURATION:.2f}s cubic-bezier(.2,.8,.2,1) both;
+      }}
       .title {{ fill:#b7ffd0; font-size:14px; font-weight:600; }}
       .status {{ fill:#39ff88; font-size:10px; letter-spacing:1.4px; }}
       .month,.day,.legend-label {{ fill:#3f8058; font-size:10px; }}
@@ -237,7 +282,7 @@ def render_svg(calendar: dict, username: str) -> str:
   <text x="20" y="25" class="title">{total} contributions · last 12 months</text>
   <g text-anchor="end" class="boot">
     <text x="940" y="25" opacity="0">RECONSTRUCTING GIT HISTORY...
-      <animate attributeName="opacity" values="1;1;0" keyTimes="0;.94;1" begin="0s" dur="{scan_finish:.2f}s" fill="freeze"/>
+      <animate attributeName="opacity" values="1;1;0" keyTimes="0;.94;1" begin="0s" dur="{reveal_finish:.2f}s" fill="freeze"/>
     </text>
     <text x="940" y="25" opacity="1">● 365D CHECKSUM VERIFIED
       <set attributeName="opacity" to="0" begin="0s" dur="{settle_finish:.2f}s"/>
@@ -249,24 +294,12 @@ def render_svg(calendar: dict, username: str) -> str:
   <text x="42" y="112" class="day">Wed</text>
   <text x="42" y="144" class="day">Fri</text>
   <rect x="62" y="47" width="{scan_end_x - 62 + 8}" height="116" rx="3" fill="#04120b" stroke="#123d26" opacity=".72"/>
-  <g clip-path="url(#historyReveal)">{''.join(cells)}</g>
+  <g>{''.join(cells)}</g>
+  <g>{''.join(scan_rows)}</g>
   <rect x="{current_week_x - 3}" y="51" width="{cell + 6}" height="111" rx="2" fill="none" stroke="#70ff9b" stroke-width="1" opacity=".42">
     <set attributeName="opacity" to="0" begin="0s" dur="{settle_finish:.2f}s"/>
     <animate attributeName="opacity" from="0" to=".42" begin="{settle_finish:.2f}s" dur=".16s" fill="freeze"/>
   </rect>
-  <g opacity="0">
-    <path d="M16 {front_top} H{front_top_x} L{front_bottom_x} {front_bottom} H-40 Z"
-          fill="url(#frontBand)"/>
-    <path d="M24 {front_top} L-32 {front_bottom}"
-          fill="none" stroke="#39ff88" stroke-width="1.2" opacity=".20"/>
-    <path d="M{front_top_x} {front_top} L{front_bottom_x} {front_bottom}"
-          fill="none" stroke="#e9fff0" stroke-width="2.2" filter="url(#pixelGlow)"/>
-    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.025;.955;1"
-      begin="{scan_start}s" dur="{scan_duration}s" fill="freeze"/>
-    <animateTransform attributeName="transform" type="translate"
-      from="{scan_from_x} 0" to="{scan_to_x} 0"
-      begin="{scan_start}s" dur="{scan_duration}s" fill="freeze"/>
-  </g>
   <rect width="960" height="180" rx="10" fill="url(#crtLines)" pointer-events="none"/>
   <text x="20" y="174" class="telemetry">{escape(telemetry)}</text>
   {''.join(legend)}
