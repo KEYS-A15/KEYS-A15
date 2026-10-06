@@ -13,7 +13,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 API_URL = "https://api.github.com/graphql"
-REVEAL_VERSION = "diagonal-chevron-v2"
+REVEAL_VERSION = "diagonal-slash-v3"
 PALETTE = {
     "NONE": "#07130d",
     "FIRST_QUARTILE": "#0d3b22",
@@ -97,10 +97,11 @@ def render_svg(calendar: dict, username: str) -> str:
     scan_finish = scan_start + scan_duration
     settle_finish = scan_finish + 0.12
     front_top = 47
-    front_middle = 105
     front_bottom = 163
-    front_point = 48
-    scan_from_x = grid_x - front_point
+    front_top_x = 38
+    front_bottom_x = -18
+    scan_from_x = grid_x - front_top_x
+    scan_to_x = scan_end_x - front_bottom_x
 
     all_days = sorted(
         (
@@ -202,10 +203,10 @@ def render_svg(calendar: dict, username: str) -> str:
   <desc id="desc">{total} contributions during the last year, revealed from left to right</desc>
   <defs>
     <clipPath id="historyReveal" clipPathUnits="userSpaceOnUse">
-      <path d="M-1200 {front_top} H0 L{front_point} {front_middle} L0 {front_bottom} H-1200 Z"
-            transform="translate({scan_end_x} 0)">
+      <path d="M-1200 {front_top} H{front_top_x} L{front_bottom_x} {front_bottom} H-1200 Z"
+            transform="translate({scan_to_x} 0)">
         <animateTransform attributeName="transform" type="translate"
-          from="{scan_from_x} 0" to="{scan_end_x} 0"
+          from="{scan_from_x} 0" to="{scan_to_x} 0"
           begin="{scan_start}s" dur="{scan_duration}s" fill="freeze"/>
       </path>
     </clipPath>
@@ -254,20 +255,16 @@ def render_svg(calendar: dict, username: str) -> str:
     <animate attributeName="opacity" from="0" to=".42" begin="{settle_finish:.2f}s" dur=".16s" fill="freeze"/>
   </rect>
   <g opacity="0">
-    <path d="M-36 {front_top} L12 {front_middle} L-36 {front_bottom} L0 {front_bottom} L{front_point} {front_middle} L0 {front_top} Z"
+    <path d="M16 {front_top} H{front_top_x} L{front_bottom_x} {front_bottom} H-40 Z"
           fill="url(#frontBand)"/>
-    <path d="M-30 {front_top} L18 {front_middle} L-30 {front_bottom}"
-          fill="none" stroke="#39ff88" stroke-width="1" opacity=".10"/>
-    <path d="M-18 {front_top} L30 {front_middle} L-18 {front_bottom}"
+    <path d="M24 {front_top} L-32 {front_bottom}"
           fill="none" stroke="#39ff88" stroke-width="1.2" opacity=".20"/>
-    <path d="M-8 {front_top} L40 {front_middle} L-8 {front_bottom}"
-          fill="none" stroke="#70ffa0" stroke-width="1.4" opacity=".38"/>
-    <path d="M0 {front_top} L{front_point} {front_middle} L0 {front_bottom}"
-          fill="none" stroke="#e9fff0" stroke-width="2.4" filter="url(#pixelGlow)"/>
+    <path d="M{front_top_x} {front_top} L{front_bottom_x} {front_bottom}"
+          fill="none" stroke="#e9fff0" stroke-width="2.2" filter="url(#pixelGlow)"/>
     <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.025;.955;1"
       begin="{scan_start}s" dur="{scan_duration}s" fill="freeze"/>
     <animateTransform attributeName="transform" type="translate"
-      from="{scan_from_x} 0" to="{scan_end_x} 0"
+      from="{scan_from_x} 0" to="{scan_to_x} 0"
       begin="{scan_start}s" dur="{scan_duration}s" fill="freeze"/>
   </g>
   <rect width="960" height="180" rx="10" fill="url(#crtLines)" pointer-events="none"/>
